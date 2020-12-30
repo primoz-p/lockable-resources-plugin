@@ -8,6 +8,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 package org.jenkins.plugins.lockableresources;
 
+import static java.text.DateFormat.MEDIUM;
+import static java.text.DateFormat.SHORT;
+
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import groovy.lang.Binding;
@@ -23,8 +26,11 @@ import hudson.model.Run;
 import hudson.model.User;
 import hudson.tasks.Mailer.UserProperty;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -54,6 +60,7 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
   private String description = "";
   private String labels = "";
   private String reservedBy = null;
+  private Date reservedTimestamp = null;
   private boolean ephemeral;
 
   private long queueItemId = NOT_QUEUED;
@@ -184,6 +191,16 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
   }
 
   @Exported
+  public Date getReservedTimestamp() {
+    return reservedTimestamp == null ? null : new Date(reservedTimestamp.getTime());
+  }
+
+  @DataBoundSetter
+  public void setReservedTimestamp(final Date reservedTimestamp) {
+    this.reservedTimestamp = reservedTimestamp == null ? null : new Date(reservedTimestamp.getTime());
+  }
+
+  @Exported
   public String getReservedBy() {
     return reservedBy;
   }
@@ -195,7 +212,7 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
 
   @Exported
   public String getReservedByEmail() {
-    if (reservedBy != null) {
+    if (isReserved()) {
       UserProperty email = null;
       User user = Jenkins.get().getUser(reservedBy);
       if (user != null) email = user.getProperty(UserProperty.class);
@@ -238,11 +255,12 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
    */
   @CheckForNull
   public String getLockCause() {
+    final DateFormat format = SimpleDateFormat.getDateTimeInstance(MEDIUM, SHORT);
     if (isReserved()) {
-      return String.format("[%s] is reserved by %s", name, reservedBy);
+      return String.format("[%s] is reserved by %s at %s", name, reservedBy, format.format(reservedTimestamp));
     }
     if (isLocked()) {
-      return String.format("[%s] is locked by %s", name, buildExternalizableId);
+      return String.format("[%s] is locked by %s at %s", name, buildExternalizableId, format.format(reservedTimestamp));
     }
     return null;
   }
@@ -275,8 +293,10 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
     this.build = lockedBy;
     if (lockedBy != null) {
       this.buildExternalizableId = lockedBy.getExternalizableId();
+      setReservedTimestamp(new Date());
     } else {
       this.buildExternalizableId = null;
+      setReservedTimestamp(null);
     }
   }
 
@@ -321,8 +341,14 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
     this.reservedBy = Util.fixEmptyAndTrim(userName);
   }
 
+  public void reserve(String userName) {
+    setReservedBy(userName);
+    setReservedTimestamp(new Date());
+  }
+
   public void unReserve() {
-    this.reservedBy = null;
+    setReservedBy(null);
+    setReservedTimestamp(null);
   }
 
   public void reset() {
