@@ -73,6 +73,10 @@ public class LockableResourcesRootAction implements RootAction {
 		return LockableResourcesManager.get().getResources();
 	}
 
+	public LockableResource getResource(final String resourceName) {
+		return LockableResourcesManager.get().fromName(resourceName);
+	}
+
 	public int getFreeResourceAmount(String label) {
 		return LockableResourcesManager.get().getFreeResourceAmount(label);
 	}
@@ -168,4 +172,21 @@ public class LockableResourcesRootAction implements RootAction {
 
 		rsp.forwardToPreviousPage(req);
 	}
+
+  @RequirePOST
+  public void doSubmitNote(final StaplerRequest req, final StaplerResponse rsp)
+    throws IOException, ServletException {
+    Jenkins.get().checkPermission(RESERVE);
+
+    final String resourceName = req.getParameter("resourceName");
+    final LockableResource resource = getResource(resourceName);
+    if (resource == null) {
+      rsp.sendError(404, "Resource not found: '" + resourceName + "'!");
+    } else {
+      resource.setNote(req.getParameter("resourceNote"));
+      LockableResourcesManager.get().save();
+
+      rsp.forwardToPreviousPage(req);
+    }
+  }
 }

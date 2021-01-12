@@ -61,6 +61,7 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
   private String labels = "";
   private String reservedBy = null;
   private Date reservedTimestamp = null;
+  private String note = "";
   private boolean ephemeral;
 
   private long queueItemId = NOT_QUEUED;
@@ -81,11 +82,12 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
 
   /** @deprecated Use single-argument constructor instead (since 1.8) */
   @Deprecated
-  public LockableResource(String name, String description, String labels, String reservedBy) {
+  public LockableResource(String name, String description, String labels, String reservedBy, String note) {
     this.name = name;
     this.description = description;
     this.labels = labels;
     this.reservedBy = Util.fixEmptyAndTrim(reservedBy);
+    this.note = note;
   }
 
   @DataBoundConstructor
@@ -131,6 +133,16 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
     return labels;
   }
 
+  @Exported
+  public String getNote() {
+    return this.note;
+  }
+
+  @DataBoundSetter
+  public void setNote(String note) {
+    this.note = note;
+  }
+
   @DataBoundSetter
   public void setEphemeral(boolean ephemeral) {
     this.ephemeral = ephemeral;
@@ -170,6 +182,7 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
     binding.setVariable("resourceName", name);
     binding.setVariable("resourceDescription", description);
     binding.setVariable("resourceLabels", makeLabelsList());
+    binding.setVariable("resourceNote", note);
     try {
       Object result = script.evaluate(Jenkins.get().getPluginManager().uberClassLoader, binding);
       if (LOGGER.isLoggable(Level.FINE)) {
