@@ -377,6 +377,7 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
   public void copyUnconfigurableProperties(final LockableResource sourceResource) {
     if (sourceResource != null) {
       setReservedTimestamp(sourceResource.getReservedTimestamp());
+      setNote(sourceResource.getNote());
     }
   }
 
