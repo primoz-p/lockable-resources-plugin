@@ -8,6 +8,7 @@
   See the "LICENSE.txt" file for more information.
  -->
 <?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:i="jelly:fmt">
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <l:layout title="${it.displayName}" type="one-column">
     <script type="text/javascript"
@@ -41,6 +42,10 @@
                   <a href="${rootURL}/${resource.build.url}">
                     ${resource.build.fullDisplayName}
                   </a>
+                  <j:if test="${resource.reservedTimestamp != null}">
+                    <br/>
+                    <em><i:formatDate value="${resource.reservedTimestamp}" type="both" dateStyle="medium" timeStyle="short"/></em>
+                  </j:if>
                 </td>
                 <td class="pane">${resource.labels}</td>
                 <td class="pane"><f:checkbox checked="${resource.ephemeral}" readonly="true"/></td>
@@ -56,6 +61,10 @@
                     <strong>RESERVED</strong>
                     by
                     <strong>${resource.reservedBy}</strong>
+                    <j:if test="${resource.reservedTimestamp != null}">
+                      <br/>
+                      <em><i:formatDate value="${resource.reservedTimestamp}" type="both" dateStyle="medium" timeStyle="short"/></em>
+                    </j:if>
                   </td>
                   <td class="pane">${resource.labels}</td>
                   <td class="pane"><f:checkbox checked="${resource.ephemeral}" readonly="true"/></td>
@@ -72,6 +81,10 @@
                   <j:if test="${resource.queued}">
                     <td class="pane" style="color: yellow;">
                       QUEUED by "${resource.queueItemProject} ${resource.queueItemId}"
+                      <j:if test="${resource.reservedTimestamp != null}">
+                        <br/>
+                        <em><i:formatDate value="${resource.reservedTimestamp}" type="both" dateStyle="medium" timeStyle="short"/></em>
+                      </j:if>
                     </td>
                     <td class="pane">${resource.labels}</td>
                     <td class="pane"><f:checkbox checked="${resource.ephemeral}" readonly="true"/></td>

@@ -611,7 +611,7 @@ public class LockableResourcesManager extends GlobalConfiguration {
       }
     }
     for (LockableResource r : resources) {
-      r.setReservedBy(userName);
+      r.reserve(userName);
     }
     save();
     return true;
