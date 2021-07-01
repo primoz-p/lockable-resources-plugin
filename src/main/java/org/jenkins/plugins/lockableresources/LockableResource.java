@@ -54,6 +54,7 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
   private String description = "";
   private String labels = "";
   private String reservedBy = null;
+  private String note = "";
   private boolean ephemeral;
 
   private long queueItemId = NOT_QUEUED;
@@ -74,11 +75,12 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
 
   /** @deprecated Use single-argument constructor instead (since 1.8) */
   @Deprecated
-  public LockableResource(String name, String description, String labels, String reservedBy) {
+  public LockableResource(String name, String description, String labels, String reservedBy, String note) {
     this.name = name;
     this.description = description;
     this.labels = labels;
     this.reservedBy = Util.fixEmptyAndTrim(reservedBy);
+    this.note = note;
   }
 
   @DataBoundConstructor
@@ -124,6 +126,16 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
     return labels;
   }
 
+  @Exported
+  public String getNote() {
+    return this.note;
+  }
+
+  @DataBoundSetter
+  public void setNote(String note) {
+    this.note = note;
+  }
+
   @DataBoundSetter
   public void setEphemeral(boolean ephemeral) {
     this.ephemeral = ephemeral;
@@ -163,6 +175,7 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
     binding.setVariable("resourceName", name);
     binding.setVariable("resourceDescription", description);
     binding.setVariable("resourceLabels", makeLabelsList());
+    binding.setVariable("resourceNote", note);
     try {
       Object result = script.evaluate(Jenkins.get().getPluginManager().uberClassLoader, binding);
       if (LOGGER.isLoggable(Level.FINE)) {
@@ -329,6 +342,16 @@ public class LockableResource extends AbstractDescribableImpl<LockableResource>
     this.unReserve();
     this.unqueue();
     this.setBuild(null);
+  }
+
+  /**
+   * Copy unconfigurable properties from another instance. Normally, called after "lockable resource" configuration change.
+   * @param sourceResource resource with properties to copy from
+   */
+  public void copyUnconfigurableProperties(final LockableResource sourceResource) {
+    if (sourceResource != null) {
+      setNote(sourceResource.getNote());
+    }
   }
 
   @Override
