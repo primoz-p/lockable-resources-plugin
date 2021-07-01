@@ -505,7 +505,7 @@ public class LockStepTest extends LockStepTestBase {
     resource1.setReservedBy("someone");
     assertEquals("someone", resource1.getReservedBy());
     assertTrue(resource1.isReserved());
-    assertNotNull(resource1.getReservedTimestamp());
+    assertNull(resource1.getReservedTimestamp());
 
     JSONObject apiRes = TestHelpers.getResourceFromApi(j, "resource1", false);
     assertThat(apiRes, hasEntry("reserved", true));
